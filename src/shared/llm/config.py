@@ -280,15 +280,17 @@ def rank_by_relevance(
     Returns:
         Items reordered by relevance (most relevant first).
     """
+    if top_k <= 0:
+        return []
     if len(items) <= top_k:
-        return items  # No ranking needed
+        return items[:top_k]  # No ranking needed
 
     try:
         llm = get_small_llm()
         if not llm.is_available():
-            return items  # LLM not available, return unranked
+            return items[:top_k]  # Respect requested limit without an LLM
     except Exception:
-        return items
+        return items[:top_k]
 
     # Build ranking prompt
     numbered = []
@@ -307,7 +309,7 @@ def rank_by_relevance(
         response = llm.ask(prompt, max_tokens=128, temperature=0.0)
         # Parse numbers from response
         nums = re.findall(r'\d+', response.strip())
-        indices = [int(n) - 1 for n in nums if 0 < int(n) <= len(items)]
+        indices = [int(n) - 1 for n in nums if 0 < int(n) <= len(numbered)]
 
         # Reorder by ranking
         ranked = []
@@ -324,4 +326,4 @@ def rank_by_relevance(
 
         return ranked[:top_k]
     except Exception:
-        return items  # Ranking failed, return unranked
+        return items[:top_k]  # Respect requested limit if ranking fails

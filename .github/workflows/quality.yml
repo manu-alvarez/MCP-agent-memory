@@ -2,7 +2,7 @@ name: MCP Memory acceptance
 
 on:
   push:
-    branches: [ci/verify-mcp-memory-20261123]
+    branches: [main]
   pull_request:
     branches: [main]
 
